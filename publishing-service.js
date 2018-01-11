@@ -1,8 +1,6 @@
 'use strict';
-angular.module('app.services.publishing', [])
+angular.module('union.services.publishing.service', [])
   .service('PublishingService', [function() {
-
-    console.log("publishing service init");
 
     const subscriptions = {};
     let UNIQUE_ID = 0;
@@ -14,12 +12,11 @@ angular.module('app.services.publishing', [])
      */
     function subscribe(key, cb) {
       if(!key || typeof cb !== 'function') {
-        return console.log('key and callback are required');
+        return;
       }
       const subscriberID = UNIQUE_ID++;
       subscriptions[key] = subscriptions[key] || [];
       subscriptions[key].push({ subscriberID, cb });
-      console.log('subscription created for ', key);
       return {
         unsubscribe: function() {
           unsubscribe({ subscriberID, key })
@@ -33,12 +30,11 @@ angular.module('app.services.publishing', [])
      */
     function unsubscribe({ subscriberID, key }) {
       if(!subscriptions[key]) {
-        return console.log(`Subscriber key ${key} not found`);
+        return;
       }
       const idx = _.findIndex(subscriptions[key], subscriber => subscriber.subscriberID === subscriberID);
       if(idx > -1) {
         subscriptions[key].splice(idx, 1);
-        console.log('removing subscriber', subscriptions);
       }
       if(!subscriptions[key].length) {
         delete subscriptions[key];
