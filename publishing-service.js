@@ -7,48 +7,53 @@ angular.module('union.services.publishing.service', [])
 
     /**
      * Subscribe
-     * Stores subscriber's callback in subscriptions object
-     * Returns an object with unsubscribe function
+     * Registers a subscriber to notifications on channel
      */
-    function subscribe(key, cb) {
-      if(!key || typeof cb !== 'function') {
+    function subscribe(channel, cb) {
+      if(!channel || typeof cb !== 'function') {
         return;
       }
       const subscriberID = UNIQUE_ID++;
-      subscriptions[key] = subscriptions[key] || [];
-      subscriptions[key].push({ subscriberID, cb });
-      return {
-        unsubscribe: function() {
-          unsubscribe({ subscriberID, key })
-        }
+      const subscription = new Subscription(subscriberID, channel, cb);
+      subscriptions[channel] = subscriptions[channel] || [];
+      subscriptions[channel].push(subscription);
+      return subscription;
+    }
+
+    /**
+     * Notify
+     * Fire all callbacks associated with channel
+     */
+    function notify(channel, data) {
+      if(subscriptions[channel]) {
+        subscriptions[channel].forEach(subscriber => subscriber.callback(data));
       }
     }
 
     /**
-     * Unsubscribe
-     * Remove subscriber marked by key and subscriberID
+     * Subscription Constructor
      */
-    function unsubscribe({ subscriberID, key }) {
-      if(!subscriptions[key]) {
+    function Subscription(subscriberID, channel, callback) {
+      this.subscriberId = subscriberID;
+      this.channel = channel;
+      this.callback = callback;
+    }
+
+    /**
+     * Subscription Unsubscribe
+     * Removes this subscriber from channel
+     */
+    Subscription.prototype.unsubscribe = function() {
+      const subscribers = subscriptions[this.channel];
+      if(!subscribers) {
         return;
       }
-      const idx = _.findIndex(subscriptions[key], subscriber => subscriber.subscriberID === subscriberID);
+      const idx = _.findIndex(subscribers, subscriber => subscriber.subscriberID === this.subscriberID);
       if(idx > -1) {
-        subscriptions[key].splice(idx, 1);
+        subscribers.splice(idx, 1);
       }
-      if(!subscriptions[key].length) {
-        delete subscriptions[key];
-      }
-    }
-
-    /**
-     * Publish
-     * Published event marked by key if key is defined
-     * Else publishes events to all subscribers
-     */
-    function notify(key, data) {
-      if(subscriptions[key]) {
-        subscriptions[key].forEach(subscriber => subscriber.cb(data));
+      if(!subscribers.length) {
+        delete subscriptions[this.channel];
       }
     }
 
@@ -57,5 +62,6 @@ angular.module('union.services.publishing.service', [])
       subscribe,
       notify
     }
+
 
   }]);
