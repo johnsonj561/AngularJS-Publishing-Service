@@ -46,17 +46,16 @@ angular.module('union.services.publishing.service', [])
      * Published event marked by key if key is defined
      * Else publishes events to all subscribers
      */
-    function publish(key) {
+    function notify(key, data) {
       if(subscriptions[key]) {
-        subscriptions[key].forEach(subscriber => subscriber.cb());
+        subscriptions[key].forEach(subscriber => subscriber.cb(data));
       }
     }
 
 
     return {
       subscribe,
-      publish
+      notify
     }
 
   }]);
-
