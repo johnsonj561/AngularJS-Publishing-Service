@@ -1,5 +1,5 @@
 'use strict';
-angular.module('union.services.publishing.service', [])
+angular.module('app.publishing.service', [])
   .service('PublishingService', [function() {
 
     const subscriptions = {};
